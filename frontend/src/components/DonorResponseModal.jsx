@@ -42,7 +42,12 @@ export default function DonorResponseModal({ request, onClose, onResponseComplet
         }
       } catch (err) {
         if (isMounted) {
-          setErrorMessage('Could not load donor profiles: ' + (err.message || 'Server error'))
+          const detail =
+            err.response?.data?.message ||
+            (typeof err.response?.data?.error === 'string' ? err.response.data.error : null) ||
+            err.message ||
+            'Server error'
+          setErrorMessage('Could not load donor profiles: ' + detail)
         }
       } finally {
         if (isMounted) setDonorsLoading(false)
@@ -90,14 +95,16 @@ export default function DonorResponseModal({ request, onClose, onResponseComplet
         onResponseCompleted(updated)
       }, 1200)
     } catch (err) {
+      const serverMessage = err.response?.data?.message
+      const serverError = typeof err.response?.data?.error === 'string' ? err.response.data.error : null
+      const clientMessage = err.message || 'Failed to accept blood request.'
+
       if (err.response?.status === 409) {
         setErrorMessage(
-          err.response.data?.message || 'Conflict: This blood request has already been accepted or is closed.'
+          serverMessage || serverError || 'Conflict: This blood request has already been accepted or is closed.'
         )
-      } else if (err.response?.data?.message) {
-        setErrorMessage(err.response.data.message)
       } else {
-        setErrorMessage(err.message || 'Failed to accept blood request.')
+        setErrorMessage(serverMessage || serverError || clientMessage)
       }
     } finally {
       setSubmittingAction(null)
@@ -126,11 +133,10 @@ export default function DonorResponseModal({ request, onClose, onResponseComplet
         onResponseCompleted(result)
       }, 1200)
     } catch (err) {
-      if (err.response?.data?.message) {
-        setErrorMessage(err.response.data.message)
-      } else {
-        setErrorMessage(err.message || 'Failed to decline blood request.')
-      }
+      const serverMessage = err.response?.data?.message
+      const serverError = typeof err.response?.data?.error === 'string' ? err.response.data.error : null
+      const clientMessage = err.message || 'Failed to decline blood request.'
+      setErrorMessage(serverMessage || serverError || clientMessage)
     } finally {
       setSubmittingAction(null)
     }
