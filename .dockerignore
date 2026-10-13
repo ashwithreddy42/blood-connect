@@ -1,0 +1,11 @@
+# Dockerignore for repository root
+frontend/node_modules/
+frontend/dist/
+backend/target/
+node_modules/
+dist/
+target/
+.git/
+.vscode/
+.idea/
+*.log
